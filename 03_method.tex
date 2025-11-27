@@ -1,0 +1,15 @@
+\expandafter\ifx\csname ifdraft\endcsname\relax
+    \documentclass[a4paper,12pt]{jreport}
+    \usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
+    \begin{document}
+\fi
+
+
+\chapter{提案手法}
+ここに提案手法
+
+
+\expandafter\ifx\csname ifdraft\endcsname\relax
+    \end{document}
+    \bibliography{main.bib}
+\fi
