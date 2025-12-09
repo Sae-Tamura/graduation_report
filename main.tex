@@ -5,7 +5,8 @@
 % ----- 仕掛け 終了 -----
 
 \usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
-
+\usepackage{setspace}
+\setstretch{1.5}
 \begin{document}
 
 \begin{titlepage}
@@ -67,7 +68,9 @@
 % 謝辞
 \include{06_thanks}
 
-
+\addcontentsline{toc}{chapter}{参考文献}
+\bibliographystyle{junsrt}
+\bibliography{main}
 
 
 \end{document}
