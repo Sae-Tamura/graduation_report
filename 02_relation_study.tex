@@ -1,39 +1,220 @@
 \expandafter\ifx\csname ifdraft\endcsname\relax
     \documentclass[a4paper,12pt]{jreport}
     \usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
+    \usepackage{url}
+    \usepackage{diagbox}
+    \usepackage[dvipdfmx]{color}
+    \usepackage[dvipdfmx]{graphicx}
+    \usepackage{caption}
+    \usepackage{float}
+    \usepackage{fancyhdr}
+    % \usepackage{multirow}
+    \usepackage{amsmath,amsfonts}
+    \usepackage{longtable}
+    \usepackage{booktabs}
+    \usepackage{ascmac}
+    \usepackage[dvipdfmx]{hyperref}
+    \usepackage{subcaption}
+    \usepackage{titlesec}
+    \newenvironment{nostretchbox}
+  {\setstretch{1.0}\ignorespaces}
+  {\ignorespacesafterend}
+    \newcommand{\figref}[1]{図\ref{#1}}
+    \newcommand{\secref}[1]{\ref{#1}節}
+    \newcommand{\subsecref}[1]{\ref{#1}項}
+    \newcommand{\tabref}[1]{表\ref{#1}}
+    \usepackage{setspace}
     \begin{document}
 \fi
-
+\setstretch{1.5}
 
 \chapter{関連研究}
-ここに関連研究を紹介
+第2章では，関連研究について述べる．具体的には，第\ref{sec:LLM}節において大規模言語モデル（Large Language Model，LLM）に関する研究を概説し，第\ref{sec:SSG}節ではシーングラフ生成に関連する研究を取り上げる．
 
-\section{シーングラフ生成モデル}
-本節では, シーングラフ生成モデルの歴史と代表的な手法について述べる.\\
+
+
+\section{大規模言語モデル}\label{sec:LLM}
+本節では, 大規模言語モデルの歴史と代表的なモデルについて述べる.
+
+近年, 自然言語処理（Natural Language Procesing: NLP）分野では, 大規模言語モデル（Large Language Model: LLM）と総称される技術群が飛躍的な進歩を遂げている. LLMは, 数千億から数兆に及ぶパラメータを有する巨大なディープラーニングモデルであり, インターネット上の膨大なテキストデータを事前学習することで, 言語の文法構造, 語彙的意味的, 文脈依存性といった多様な知識を内部に獲得している. このようにして得られたモデルは, 自然言語を理解・生成する能力を備え, 単なる統計的言語モデルを超えた汎用的な言語知能として機能する.
+
+LLMは多層のニューラルネットワークを基盤とし, 特にTransformerアーキテクチャ\cite{transformer}に基づいて構築されている. この構造において中核的な役割を果たす自己注意機構（self-attention mechanism）は, 文中の単語間の関係を動的に捉えることで, 長距離依存関係を含む文脈の理解を可能にしている. 代表的なLLMとしては, OpenAIによるGTPシリーズやGoogleのBERTが挙げられ, 文章生成, 質問応答, 翻訳, コード生成など多様なタスクにおいて高い性能を示している.\\
+さらに近年では, ChatGPTの登場により, LLMの社会的な影響力は飛躍的に拡大している. 学術研究や産業応用のみならず, 教育, ビジネス, 創作支援といった日常的な領域にも浸透しつつあり, 人とAIの新しい協働の形を実現する基盤技術として注目を集めている.
+
+\subsection{LLMの歴史}
+Zhaoらのサーベイ論文\cite{zhao_survey_2025}によれば，言語モデルの発展は大きく4つの段階に整理できる．1990年代から2010年代初頭にかけては，n-gramやマルコフモデルといった統計的言語モデルが主流であり，単語列の共起確率に基づいてテキストを生成・解析する枠組みが用いられた．これらのモデルは自然言語処理の基礎を築いたものの，語彙のスパース性や長距離依存関係の表現といった課題を抱えていた．
+
+その後，2000年代後半にはニューラルネットワークを用いたニューラル言語モデルが登場し，単語の意味関係を連続空間上で表現する分散表現（Word Embedding）が導入された．このアプローチにより，語の意味的類似性を数値的に捉えることが可能となり，Word2VecやGloVeなどが広く利用された．
+さらに，2017年にTransformerアーキテクチャ\cite{transformer}が提案され，自己注意機構（Self-Attention）を用いて文中の全単語間の依存関係を効率的に捉えることが可能となった．この革新を契機に，BERT\cite{devlin_bert_2019}やGPT-2\cite{gpt-2}といった事前学習言語モデル（Pre-trained Language Model: PLM）が登場し，大規模データによる事前学習と下流タスクへのファインチューニングという新しい学習規範が確立された．
+
+近年では，この流れをさらに拡張した大規模言語モデル（Large Language Model: LLM）が登場している．膨大なパラメータ数と学習データを活用することで，スケーリング法則（Scaling Law）が成立し，モデルサイズの拡大が性能向上に直結することが示された．GPT-3\cite{gpt-3}やPaLM\cite{chowdhery_palm_2022}，LLaMA\cite{touvron_llama_2023}などはこの系譜に属し，テキスト生成のみならず，推論・対話・知識検索など多様なタスクにおいて汎用的な能力を発揮している．さらに，ChatGPTの登場以降は，人間の指示に応答できる指示チューニング（Instruction Tuning）や人間フィードバック強化学習（Reinforcement Learning with Human Feedback: RLHF）といった適応学習手法の発展により，より自然で安全な対話型システムが実現．
+
+言語モデルの発展過程を4つの世代に整理すると図\ref{fig:evolutionprocess_llm}の通りである．また，近年におけるパラメータ数100億以上の大規模言語モデルのタイムラインを図\ref{fig:timeline_llm}に示す．以降，代表的なLLMモデルの詳細を述べる．
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/relation_study/evolutionprocess_llm.png}
+    \caption{4世代の言語モデルの進化過程 \protect \footnotemark}
+    \label{fig:evolutionprocess_llm}
+\end{figure}
+\footnotetext{\cite{zhao_survey_2025}から引用}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/relation_study/timeline_llm.png}
+    \caption{パラメータ数が100億以上のLLMのタイムライン}
+    \label{fig:timeline_llm}
+\end{figure}
+\footnotetext{\cite{zhao_survey_2025}から引用}
+
+\subsection{Transformer}
+Transformerは2017年にVaswaniら\cite{transformer}によって提案された，機械翻訳を目的とするニューラルネットワークモデルである．本モデルは，従来のリカレントニューラルネットワーク（RNN）や畳み込みニューラルネットワーク（CNN）を使用せず，Attention機構のみを基盤とした構造を持つ点に特徴がある．RNNのような逐次的処理を行わないため，計算の並列化が可能であり，長距離依存関係の学習効率も高い．その結果，Transformerは従来のモデルを上回る翻訳性能を示し，現在では多くの言語モデル（BErt，GPTなど）の基本構造として広く利用されている．
+
+\subsubsection{アーキテクチャ概要}
+Transformerは図\ref{fig:transformer_architecture}に示すように，エンコーダ・デコーダ型アーキテクチャを採用している．左側のエンコーダが入力文を連続的なベクトル表現へ変換し，右側のデコーダがその情報をもとに出力文を生成する．エンコーダおよびデコーダはそれぞれ6層から校正され，各層にはMulti-Head Attention層とPosition-wise Feed-Forward Network（FFN）の2つのサブレイヤが含まれる．また，それぞれのサブレイヤには残差接続（Residual Connection）とLayer Normalizationが組み込まれており，勾配消失の抑制と学習の安定化を実現している．
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{img/relation_study/transformer_architecture.png}
+    \caption{Transformerアーキテクチャの構成}
+    \label{fig:transformer_architecture}
+\end{figure}
+\footnotetext{\cite{transformer}から引用}
+
+\subsubsection{エンコーダ}
+エンコーダは，入力系列の各トークン間の関係を学習し，文全体の意味を内包する特徴表現を生成する役割を担う．Self-Attentionによって，各トークンは系列中の他の全てのトークンに同時に注意を向けることができ，位置に依存しない文脈依存関係を効果的に捉えることが可能になっている．
+
+\subsubsection{デコーダ}
+デコーダはエンコーダと似た構造を持つが，出力系列を逐次的に生成するための追加機構を備える．Masked Self-Attentionにより，未来の単語にアクセスできないよう制限を設け，すでに生成されたトークンのみを参照して次の単語を予測する．また，Encoder-Decoder Attentionを通じてエンコーダの出力に基づいた情報を取り込み，入力文と出力文の対応関係を学習する．
+
+\subsubsection{Attention機構}
+Transformerの中核をなすのがAttention機構であり，特にその中でもScaled Dot-Product AttentionとMulti-Head Attentnionが主要な要素である．図\ref{fig:transformer_attention}にその構造を示す，左側がScaled Dot-Product Attention，右側がそれを拡張したMulti-Head Attentnionである．
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/relation_study/transformer_attention.png}
+    \caption{Scaled Dot-Product Attention と Multi-Head Attention の構造}
+    \label{fig:transformer_attention}
+\end{figure}
+\footnotetext{\cite{transformer}から引用}
+
+Scaled Dot-Product Attentionは，入力系列中の単語同士の関連性を定量的に評価し，どの単語にどの程度注意を向けるべきかを計算する仕組みである．入力としてQuery（Q），Key（K），およびValue（V）の3種類のベクトルを受け取り，次の式\ref{eq:attention}によって出力を求める．
+
+\begin{equation}
+    \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V
+    \label{eq:attention}
+\end{equation}
+
+ここで，$QK^\top$により各トークン間の類似度（関連度）を算出し，これをKeyの次元数$\sqrt{d_k}$の平方根でスケーリングすることで，ソフトマックス関数の出力が極端な値にならないよう調整する．得られた重み分布をValueに掛け合わせることで，入力系列全体の文脈情報を反映した出力が得られる．なお，デコーダにおいては未来の単語を参照しないよう，マスク処理（Mask）を適用する場合がある．
+
+一方，Multi-Head Attentionは，このScaled Dot-Product Attentionを複数並列に実行することで，異なる文脈的特徴を同時に捉える仕組みである．図\ref{fig:transformer_attention}の右側に示すように，入力ベクトルQ，K，Vはそれぞれ複数の線形変換によって異なる表現中間へ射影される．各ヘッドでは独立にAttention計算を行い，その出力をConcat（結合）して再び線形変換を施す．これにより，モデルは異なる視点から系列内の依存関係を学習できるようになり，文法的・意味的・位置的関係など多様な特徴を同時に表現することが可能となる．
+
+このように，Attention機構は従来のRNNのような逐次的処理を必要とせず，系列全体の情報を一度に処理できる点に大きな利点がある．特にMulti-Head Attentionによって，Transformerは高い並列性と表現力を両立させ，長距離依存関係を効率的に捉えることを実現している．
+
+\subsection{GPT}
+GPT（Generative Pre-trained Transformer）は，OpenAIによって開発された自己回帰型の大規模言語モデルであり，Transformerアーキテクチャ\cite{transformer}を基盤として構築されている．大量のテキストデータを用いた事前学習によって言語知識や文脈理解能力を獲得し，入力文の続きを自然に生成できる点が特徴である．2018年に初代モデルであるGPT-1\cite{gpt-1}が発表されて以降，GPT-2\cite{gpt-2}，GPT-3\cite{gpt-3}，GPT-4\cite{gpt-4}，そしてGPT-4o\cite{gpt-4o}へと進化を続けており，言語理解・推論・マルチモーダル処理の各分野で飛躍的な進歩を遂げている．
+
+\subsubsection{GPT-2}
+2019年に登場したGPT-2は，GPT-1の構造を拡張したモデルであり，パラメータ数を1億1700万から最大15億に拡大した．学習には約40GBに及ぶWebTextデータセットを用いており，従来のようなタスクごとの追加学習を行わなくても多様な自然言語処理タスクに対応できる点が特徴である．特定タスクに特化したファインチューニングを行わずとも，翻訳や要約，質問応答といったタスクで高い性能を示し，大規模事前学習の汎用性を実証した．このゼロショット学習の有効性は，以降の大規模言語モデル開発に大きな影響を与えた．
+
+\subsubsection{GPT-3}
+GPT-3は2020年に発表され，パラメータ数を1750億にまで拡張した超大規模モデルである．GPT-2と同様のTransformer構造を基盤としているが，学習データにはCommon Crawl，Wikipedia，BooksCorpusなど膨大で多様なテキストが使用された．GPT-3の最大の特徴は「Few-shot learning」であり，わずかな例示（プロンプト）を与えるだけで，翻訳・要約・文法補正などの多様なタスクを高精度に実行できる点である．これにより，事前学習済みモデルをファインチューニングせずに多目的に利用できることが示され，言語モデルの柔軟なタスク適応性を確立した．
+
+\subsubsection{GPT-4}
+2023年に公開されたGPT-4は，GPT-3の発展版として設計され，テキスト入力だけでなく画像入力にも対応するマルチモーダルモデルである．これにより，画像をもとに説明文を生成したり，図表の内容を解析したりすることが可能になった．性能面では，法律試験（Uniform Bar Exam）で上位10％、SATで90％以上のスコアを記録するなど，専門的な試験でも人間に匹敵する水準を達成している．さらに，英語以外の言語における性能向上や，論理的推論能力の強化，生成内容の事実性向上なども報告されている．特にハルシネーションの抑制や安全性の強化に注力した点が特徴であり，信頼性の高いAIモデルとして社会的応用が広がっている．
+
+\subsubsection{GPT-4o}
+2024年に発表されたGPT-4oは，GPTシリーズの中でも最も包括的なマルチモーダルAIモデルである．テキストや画像に加えて，音声や動画も入力として処理し，更には音声での応答も可能となった．これにより，人間との自然な対話が実現し，リアルタイム性の高いインタラクションが可能になっている．また，非英語圏でのタスク性能も向上し，医療・教育・研究など多様な領域での応用が進んでいる．加えて，GPT-4に比べて，処理速度とコストの両面で効率化が図られており，より軽量かつ実用的なモデルとして位置付けられている．
+
+一方で，人間に近い音声表現や対話能力を持つことで，ユーザーがAIに対して過剰な信頼や感情的な依存を抱く可能性も指摘されている．それでもなお，GPT-4oはマルチモーダル統合と応答品質の両面で大きな進化を遂げたモデルであり，次世代の知的支援システムの基盤として期待されている．\\
+
+本研究では，視覚的な情報から物体名や関係性を抽出する際に，GPT-4oのマルチモーダル能力を活用することで，オープンボキャブラリかつ高精度なオブジェクト認識を実現することを目的とした．
+
+
+\section{シーングラフ生成モデル}\label{sec:SSG}
+本節では, シーングラフ生成モデルの歴史と代表的な手法について述べる.
 
 シーングラフ生成（Scene Graph Generation: SGG）は, 与えられた画像からオブジェクトを検出し, それらのオブジェクト間の関係を予測することを目的とするタスクである. 各オブジェクトをノード, 関係をエッジとして表すことで, 画像の内容を構造的かつ解釈可能な形で記述できる点が特徴である. シーングラフ表現は, 画像キャプション生成やVisual Question Answering（VQA）, 画像検索などの様々な下流タスクにおいて有用であることが示されている. 
 
 \subsection{シーングラフ生成の歴史}
-シーングラフ生成（Scene Graph Generation: SGG）は, 画像内のオブジェクト間の意味的関係を構造的に表現することを目的としたタスクであり, その起源は2010年代中頃に登場した視覚的関係認識（Visual Relationship Detection）にさかのぼる. Luら\cite{lu_visual_2016}は〈主語, 関係, 目的語〉の三つ組で画像を表現する手法を提案し, 物体間の関係理解という新たな方向性を示した. 2017年にはXuら\cite{xu_scene_2017}によって「Scene Graph Generation」という名称が初めて明確に定義され, 同時期にVisual Genomeデータセットの公開によって学習環境が整備された。その後, Zellersら\cite{zellers_neural_2018}のMotifNetやYangら\cite{yang_graph_2018}のGraph R-CNNなど, 文脈情報やグラフ構造を活用するモデルが登場し, SGGの性能が大きく向上した.\\
+シーングラフ生成（Scene Graph Generation: SGG）は, 画像内のオブジェクト間の意味的関係を構造的に表現することを目的としたタスクであり, その起源は2010年代中頃に登場した視覚的関係認識（Visual Relationship Detection）にさかのぼる. Luら\cite{lu_visual_2016}は〈主語, 関係, 目的語〉の三つ組で画像を表現する手法を提案し, 物体間の関係理解という新たな方向性を示した. 2017年にはXuら\cite{xu_scene_2017}によって「Scene Graph Generation」という名称が初めて明確に定義され, 同時期にVisual Genomeデータセットの公開によって学習環境が整備された。その後, Zellersら\cite{zellers_neural_2018}のMotifNetやYangら\cite{yang_graph_2018}のGraph R-CNNなど, 文脈情報やグラフ構造を活用するモデルが登場し, SGGの性能が大きく向上した.
 
-2019年以降は, オブジェクト間の階層的依存関係を考慮するVCTree\cite{tang_learning_2018}などが提案され, 関係推定の精度向上が進んだ. さらに2021年以降, Transformer構造を導入したモデルが主流となり, SGTR\cite{li_sgtr_2022}やRelTR\cite{cong_reltr_2023}など, エンドツーエンドでオブジェクト検出と関係推定を同時に行う手法が登場した。その中でもEGTR（End-to-End Graph Transformer）\cite{im_egtr_2024}は, オブジェクトと関係を統一的にトークンとして扱うことで高い表現力を実現した. 近年では, CLIPやGrounding DINOなどのマルチモーダル事前学習モデルを活用し、未知のカテゴリや関係にも対応可能なオープンボキャブラリ型SGG（Open-Vocabulary SGG）への発展が進んでいる.\\
+2019年以降は, オブジェクト間の階層的依存関係を考慮するVCTree\cite{tang_learning_2018}などが提案され, 関係推定の精度向上が進んだ. さらに2021年以降, Transformer構造\cite{transformer}を導入したモデルが主流となり, SGTR\cite{li_sgtr_2022}やRelTR\cite{cong_reltr_2023}など, エンドツーエンドでオブジェクト検出と関係推定を同時に行う手法が登場した。その中でもEGTR（End-to-End Graph Transformer）\cite{egtr}は, オブジェクトと関係を統一的にトークンとして扱うことで高い表現力を実現した. 
+
+近年では, CLIPやGrounding DINOなどのマルチモーダル事前学習モデルを活用し、未知のカテゴリや関係にも対応可能なオープンボキャブラリ型SGG（Open-Vocabulary SGG）への発展が進んでいる.
 
 以下,代表的な手法を述べる.
 
 \subsection{EGTR}
+EGTR\cite{egtr}は，Transformerベースの1段階物体検出器（DETR）\cite{detr}に内在する自己注意（Self-Attention）の重みから，物体間の関係を直接抽出するSGGモデルである．既存の1段階SGGモデル（RelTRやSGTR）が別途「triplet query」や「triplet detector」を導入していたのに対し，EGTRはDETRの自己注意層におけるクエリ間の依存構造をそのまま関係情報として再利用する．これにより，モデルの軽量化と高速な推論を実現している．
 
+\subsubsection{モデル構造}
+図\ref{fig:egtr_architecture}にEGTRの全体構造を示す．EGTRは，DeformableDETRをベースとし，まずCNNおよびTransformerエンコーダにより画像特徴を抽出し，デコーダのSelf-Attention層においてオブジェクトクエリ間の関係を学習する．デコーダのSelf-Attention層から得られるクエリ（$Q^l$）とキー（$K^l$）を主語・目的語とみなして関係表現を構築する：
+\begin{equation}
+    R_a^l = \left[ Q^l W_S^l \; ; \; K^l W_O^l \right],
+\end{equation}
+ここで，$W_S^l, W_O^l$は主語・目的語の射影行列であり，得られたテンソル$R_a^l \in \mathbb{R}^{N \times N \times 2 d_{\text{model}}}$は各物体ペア間の関係特徴を表す．また，最終層のオブジェクト表現$Z^L$に対しても同様の処理を施し，物体検出情報を補完する：
+\begin{equation}
+    R_z = \left[ Z^L W_S \; ; \; Z^L W_O \right].
+    \label{eq:rz}
+\end{equation}
+これら全層の関係表現をGated Sumで統合し，情報の寄与度を動的に制御する：
+\begin{equation}
+    \hat{G} = \sigma \left(
+        \mathrm{MLP}_{\mathrm{rel}}
+        \left(
+            \sum_{l=1}^{L} \left( g_a^l \odot R_a^l \right)
+            + g_z \odot R_z
+        \right)
+    \right),
+    \label{eq:gated_sum}
+\end{equation}
+ここで，$g_a^l, g_z$ はゲート値，$\mathrm{MLP}_{\mathrm{rel}}$ は 3 層の全結合層，
+$\sigma$ はシグモイド関数である．
+この出力 $\hat{G} \in \mathbb{R}^{N \times N \times |C_p|}$ は，各物体ペアの述語（関係）確率を表すシーングラフとなる．\\
 
-\section{大規模言語モデル}
-近年, 自然言語処理（Natural Language Procesing: NLP）分野では, 大規模言語モデル（Large Language Model: LLM）と総称される技術群が飛躍的な進歩を遂げている. LLMは, 数千億から数兆に及ぶパラメータを有する巨大なディープラーニングモデルであり, インターネット上の膨大なテキストデータを事前学習することで, 言語の文法構造, 語彙的意味的, 文脈依存性といった多様な知識を内部に獲得している. このようにして得られたモデルは, 自然言語を理解・生成する能力を備え, 単なる統計的言語モデルを超えた汎用的な言語知能として機能する.\\
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/relation_study/egtr_architecture.png}
+    \caption{EGTRアーキテクチャの構造}
+    \label{fig:egtr_architecture}
+\end{figure}
+\footnotetext{\cite{egtr}から引用}
 
-LLMは多層のニューラルネットワークを基盤とし, 特にトランスフォーマーアーキテクチャに基づいて構築されている. この構造において中核的な役割を果たす自己注意機構（self-attention mechanism）は, 文中の単語間の関係を動的に捉えることで, 長距離依存関係を含む文脈の理解を可能にしている. 代表的なLLMとしては, OpenAIによるGTPシリーズやGoogleのBERTが挙げられ, 文章生成, 質問応答, 翻訳, コード生成など多様なタスクにおいて高い性能を示している.\\
+EGTRは，物体検出と関係抽出を同時に最適化するマルチタスク学習を採用する．総損失は以下で定義される：
 
-さらに近年では, ChatGPTの登場により, LLMの社会的な影響力は飛躍的に拡大している. 学術研究や産業応用のみならず, 教育, ビジネス, 創作支援といった日常的な領域にも浸透しつつあり, 人とAIの新しい協働の形を実現する基盤技術として注目を集めている.
+\begin{equation}
+    \mathcal{L} = \mathcal{L}_{\mathrm{od}} + \lambda_{\mathrm{rel}}\mathcal{L}_{\mathrm{rel}} + \lambda_{\mathrm{con}}\mathcal{L}_{\mathrm{con}},
+    \label{eq:total_loss}
+\end{equation}
 
-\subsection{LLMの歴史}
-歴史書く
+ここで，$\mathcal{L}_{\mathrm{od}}$ は物体検出損失，$\mathcal{L}_{\mathrm{rel}}$ は関係抽出損失，$\mathcal{L}_{\mathrm{con}}$ は Connectivity Prediction（2値分類による関係有無判定）の損失である．
 
-\subsection{Transformerアーキテクチャ}
+また，学習初期の検出誤差が関係推定に悪影響を及ぼすことを防ぐため，Relation Smoothingを導入する．物体 $i$ に対する不確実性 $u_i$ をマッチングコストから算出し，
+
+\begin{equation}
+    u_i = \sigma\!\left( \mathrm{cost}_i - \mathrm{cost}_{\min} + \sigma^{-1}(\alpha) \right),
+    \label{eq:relation_smoothing}
+\end{equation}
+
+主語・目的語の信頼度に基づき関係ラベルを補正する：
+
+\begin{equation}
+    G_{ijk} = (1 - u_i)(1 - u_j).
+    \label{eq:g_ijk}
+\end{equation}
+
+これにより，学習初期は物体検出を優先し，訓練が進むにつれて関係抽出へと焦点が移るカリキュラムの学習が実現される．\\
+
+しかし，EGTRはVisual Genome\cite{VisualGenome}やOpen Imagesなどのデータセットによる学習によって一定の性能を示している．つまり，特定のデータセットに含まれるカテゴリラベルに依存しており，未知の物体や関係を扱うことはできない．すなわち，EGTRはクローズドボキャブラリ設定で設計されており，学習時に存在しなかった語彙を認識・関係推定することは困難である．
+
+このような制約を克服するため，近年ではオープンボキャブラリシーングラフ生成（Open-Vocabulary Scene Graph Generation; OVSGG）が注目されている．これらの手法では，大規模視覚言語モデル（Vision-Language Model; VLM）や大規模言語モデル（LLM）を活用することで，訓練データに含まれない新規カテゴリや関係語にも一般化することを目指している．
+
+次節では，このオープンボキャブラリシーングラフ生成の代表的な研究について述べる．
+
+\subsection{オープンボキャブラリシーングラフ生成}
+
 
 
 

@@ -5,8 +5,49 @@
 % ----- 仕掛け 終了 -----
 
 \usepackage[top=35truemm,bottom=30truemm,left=30truemm,right=30truemm]{geometry}
+\usepackage{url}
+\usepackage{diagbox}
+\usepackage[dvipdfmx]{color}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{float}
+\usepackage{amsmath,amsfonts}
+\usepackage{longtable}
+\usepackage{ascmac}
 \usepackage{setspace}
-\setstretch{1.5}
+\usepackage{fancybox}
+\usepackage{booktabs}
+
+
+% ここで tcolorbox を利用する
+\usepackage{tcolorbox}           % dvipdfmx であれば通常このままでOK
+\tcbuselibrary{raster,skins}
+\tcbuselibrary{breakable} % 必要に応じて追加
+
+% ヘッダー
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{第\ \thechapter\ 章 #1}{}} 
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\setlength{\headsep}{1.5cm}
+\setlength{\headheight}{15.0pt}
+\setlength{\textheight}{22.5cm}
+
+%関連図書から参考文献に変更
+\renewcommand{\bibname}{参考文献}
+
+
+\usepackage[dvipdfmx, hidelinks]
+{hyperref}
+\usepackage{pxjahyper}
+% 任意のコマンド定義
+\newenvironment{nostretchbox}
+  {\setstretch{1.0}\ignorespaces}
+  {\ignorespacesafterend}
+\newcommand{\figref}[1]{図\ref{#1}}
+\newcommand{\secref}[1]{\ref{#1}節}
+\newcommand{\subsecref}[1]{\ref{#1}項}
+\newcommand{\tabref}[1]{表\ref{#1}}
+\renewcommand{\arraystretch}{1.3}
 \begin{document}
 
 \begin{titlepage}
@@ -54,7 +95,7 @@
 \end{titlepage}
 
 
-% 概要
+概要
 \include{00_abstract}
 
 %本文
