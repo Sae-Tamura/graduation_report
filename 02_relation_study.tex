@@ -63,7 +63,7 @@ Zhaoらのサーベイ論文\cite{zhao_survey_2025}によれば，言語モデ�
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{img/relation_study/timeline_llm.png}
-    \caption{パラメータ数が100億以上のLLMのタイムライン}
+    \caption{パラメータ数が100億以上のLLMのタイムライン \protect \footnotemark}
     \label{fig:timeline_llm}
 \end{figure}
 \footnotetext{\cite{zhao_survey_2025}から引用}
@@ -77,7 +77,7 @@ Transformerは図\ref{fig:transformer_architecture}に示すように，エン�
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\linewidth]{img/relation_study/transformer_architecture.png}
-    \caption{Transformerアーキテクチャの構成}
+    \caption{Transformerアーキテクチャの構成 \protect \footnotemark}
     \label{fig:transformer_architecture}
 \end{figure}
 \footnotetext{\cite{transformer}から引用}
@@ -94,7 +94,7 @@ Transformerの中核をなすのがAttention機構であり，特にその中で
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{img/relation_study/transformer_attention.png}
-    \caption{Scaled Dot-Product Attention と Multi-Head Attention の構造}
+    \caption{Scaled Dot-Product Attention と Multi-Head Attention の構造 \protect \footnotemark}
     \label{fig:transformer_attention}
 \end{figure}
 \footnotetext{\cite{transformer}から引用}
@@ -177,7 +177,7 @@ $\sigma$ はシグモイド関数である．
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{img/relation_study/egtr_architecture.png}
-    \caption{EGTRアーキテクチャの構造}
+    \caption{EGTRアーキテクチャの構造 \protect \footnotemark}
     \label{fig:egtr_architecture}
 \end{figure}
 \footnotetext{\cite{egtr}から引用}
@@ -209,12 +209,100 @@ EGTRは，物体検出と関係抽出を同時に最適化するマルチタス�
 
 しかし，EGTRはVisual Genome\cite{VisualGenome}やOpen Imagesなどのデータセットによる学習によって一定の性能を示している．つまり，特定のデータセットに含まれるカテゴリラベルに依存しており，未知の物体や関係を扱うことはできない．すなわち，EGTRはクローズドボキャブラリ設定で設計されており，学習時に存在しなかった語彙を認識・関係推定することは困難である．
 
-このような制約を克服するため，近年ではオープンボキャブラリシーングラフ生成（Open-Vocabulary Scene Graph Generation; OVSGG）が注目されている．これらの手法では，大規模視覚言語モデル（Vision-Language Model; VLM）や大規模言語モデル（LLM）を活用することで，訓練データに含まれない新規カテゴリや関係語にも一般化することを目指している．
+このような制約を克服するため，近年ではオープンボキャブラリシーングラフ生成（Open-vocabulary Scene Graph Generation; OvSGG）が注目されている．これらの手法では，大規模視覚言語モデル（Vision-Language Model; VLM）や大規模言語モデル（LLM）を活用することで，訓練データに含まれない新規カテゴリや関係語にも一般化することを目指している．
 
 次節では，このオープンボキャブラリシーングラフ生成の代表的な研究について述べる．
 
 \subsection{オープンボキャブラリシーングラフ生成}
-OVSGGの手法を述べる．
+オープンボキャブラリシーングラフ生成（OvSGG）は，未知の物体や関係語を副務画像に対しても柔軟に対応することを目的としたタスクである．本節では，代表的な研究として，OvSGTR\cite{ovsgtr}とPGSG\cite{pgsg}を取り上げる．
+
+\subsubsection{OvSGTR}
+2023年にChenら\cite{ovsgtr}は，OvSGTRを提案し，ノード（物体）とエッジ（関係）の両方を対象とした完全オープンボキャブラリSGGを実現した．本手法は，従来のSGTR\cite{sgtr}を基盤としたTransformerベースのエンコーダデコーダ構造を採用しており，画像特徴から物体および関係を同時に推定するエンドツーエンドのフレームワークである．
+
+彼らは，シーングラフ生成を表\ref{tab:ovsgtr_settings}に示す通り，4つの設定に分類し，特に物体と関係の両方が未知となる最も困難な状況に対して統一的な学習フレームワークを構築している．
+
+\vspace{1em}
+
+\begin{table}[H]
+    \captionsetup{skip=10pt}
+  \centering
+  \caption{OvSGTRにおける4つのシーングラフ生成設定の概要}
+  \label{tab:ovsgtr_settings}
+
+  \renewcommand{\arraystretch}{1.5}
+
+  \begin{tabular}{lccp{6cm}}
+    \hline
+    \textbf{設定名} & \textbf{物体} & \textbf{関係} & \textbf{概要} \\ \hline
+
+    \textbf{Closed-set SGG} 
+      & 既知 
+      & 既知
+      & 学習時と同一の物体・関係カテゴリで推論を行う標準的な設定． \\
+
+    \textbf{OvD-SGG} 
+      & 未知を含む 
+      & 既知
+      & 物体クラスのみをオープン化した設定．未知の物体を検出しつつ，既知の関係語で関係を予測する． \\
+
+    \textbf{OvR-SGG} 
+      & 既知 
+      & 未知を含む
+      & 関係語のみをオープン化した設定．既知の物体ペアに対して未知の関係語を推定する． \\
+
+    \textbf{OvD+R-SGG} 
+      & 未知を含む 
+      & 未知を含む
+      & 物体と関係の両方をオープン化した最も困難な設定．未学習カテゴリを含む物体検出と関係推定を同時に行う． \\ \hline
+  \end{tabular}
+\end{table}
+
+提案手法では，画像キャプションデータを用いた弱教師学習により，視覚特徴とテキスト概念を整合させるVisual-Concept Alignmentを導入し，さらにKnowledge Distillationに基づくVisual-Concept Retention戦略によって関係カテゴリの忘却を防いでいる．これにより，VG150データセットにおいて既存手法を上回る性能を示し，未知の関係を含むシーンにも対応可能であることを示した．
+
+OvSGTRにおけるVLMの活用は，CLIP\cite{clip}やGrounding DINO\cite{groundingdino}などの判別型モデルを利用して視覚と言語の埋め込み空間を整合させる特徴整合型アプローチであり，VLMはあくまで意味空間の橋渡し役として機能している．なお，LLMによる生成的推論は導入されておらず，今後の課題として言及されている．
+
+
+\subsubsection{PGSG}
+2024年にLiら\cite{pgsg}はPGSGを提案し，生成型VLM（BLIP，InstructBLIP）を用いて画像から直接シーングラフを生成する新たな枠組みを示した．図\ref{fig:pgsg_pipeline}にPGSGの全体構造を示す．
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/relation_study/pgsg_pipeline.png}
+    \caption{PGSGのパイプライン \protect \footnotemark}
+    \label{fig:pgsg_pipeline}
+\end{figure}
+\footnotetext{\cite{pgsg}から引用}
+
+PGSGは，画像からシーングラフを直接生成するimage-to-graph generationパラダイムを採用し，画像と言語の理解・生成の統一を行うBLIP\cite{blip}や，ユーザの指示に応答可能なInstructBLIP\cite{instructblip}などの生成VLMを基盤としている．本手法の最大の特徴は，従来のように物体検出と関係分類を別段階で行うのではなく，VLMの言語生成能力を活用して画像をテキスト列（scene-graph sequence）へと変換する点にある．
+
+まず，入力画像はVLMの視覚エンコーダにより特徴量へと変換され，テキストデコーダがそれに基づき，「man [ent] holding [rel] horse [ent]」のようなシーングラフ文を生成する．この出力文では，[ent]トークンが物体，[rel]トークンが関係を表しており，自然言語の構文の中に関係構造を埋め込むことで，オープン語彙の関係表現を自然に生成できる．
+
+次に，生成された文はRelationship Construction モジュールに入力され，ここで2段階の処理が行われる．
+
+\vspace{1em}
+
+\begin{itembox}[l]{Relationship Construction モジュール}
+\begin{enumerate}
+  \item \textbf{Entity Grounding}\\[2pt]
+        生成文に含まれる各エンティティに対応する画像領域を推定し，バウンディングボックスを決定する．
+        これにより，文中の「man」や「horse」と画像中の実際の物体が対応付けられる．
+
+  \item \textbf{Category Conversion}\\[2pt]
+        生成された語彙をデータセット固有のクラス空間にマッピングし，標準的なシーングラフ形式（ノードとエッジの集合）に変換する．
+\end{enumerate}
+\end{itembox}
+
+\vspace{1em}
+
+このような関係構築を経て，図\ref{fig:pgsg_pipeline}の右上に示すようなシーングラフが得られる．PGSGはこの一連のプロセスを通じて，既知・未知を問わず多様な関係の表現を可能にしたオープンボキャブラリSGGを実現している．
+
+さらに，生成過程で得られたVLMのパラメータは他の視覚言語タスクにも転移可能である．例えば，VQAにおいて「左側の人物は馬に乗っているか」や「馬に乗っている人物のジャケットの色は何か」といった質問に対して，シーングラフ生成で学習した関係表現を活用して回答を行うことができる．このようにPGSGはシーングラフ生成と視覚言語タスクの統一的フレームワークを実現しており，VLMの生成的能力をシーン理解へと拡張している．\\
+
+このように，オープンボキャブラリシーングラフ生成の研究は，VLMを特徴整合のための基盤モデルとして活用する段階から，生成を通じてシーン理解を拡張する段階へと発展しつつある．VLMの役割が「意味空間の共有」から「言語的生成による知識表現」へと広がる中で，シーングラフ生成の枠組みもより柔軟で表現的な方向へと進化している．
+
+本研究では，
+
+
 
 \section{知識グラフ}\label{sec:KG}
 
