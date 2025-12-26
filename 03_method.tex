@@ -33,94 +33,14 @@
 
 \chapter{提案手法}
 第3章では，LLMを用いたシーングラフ生成の手法について述べる．
+概要について説明
+全体の図を入れる
 
-\section{使用モデル}
-\subsection{Grounding DINO}\label{sec:groundingdino}
-Grounding DINO\cite{groundingdino}は，Liuらによって提案されたオープンセット物体検出モデルである．従来の物体検出モデルはCOCOなどのデータセットに含まれる固定カテゴリしか検出できないという制約があった．これに対して，Transformerベースの物体検出器であるDINOを基盤とし言語情報を導入することで，自然言語の入力を条件として任意の物体を検出できるように設計されている．そのため，未知のカテゴリを含むオープンワールド環境でも柔軟に対応可能である．
-
-Grounding DINOは，画像とテキストの情報を密接に統合するために，Dual-encoder-single-decoderアーキテクチャを採用している．従来モデルが一部の段階でしか特徴量を融合していなかったのに対し，Grounding DINOでは以下の3つのフェーズで視覚と言語を融合させている．
-図\ref{fig:groundingdino}にGrounding DINOのフレームワークを示す．
-
-\begin{itembox}[l]{Dual-encoder-single-decoderアーキテクチャ}
-    \begin{nostretchbox}
-    \begin{enumerate}
-        \item Feature Enhancer\\
-        自己注意機構に加え，テキスト画像，画像からテキストへの双方向の交差注意機構（Cross-Attention）を積み重ねることで，特徴量を強化・融合する．
-        \item Language-guided Query Selection\\
-        入力テキストに最も関連性の高い画像特徴をデコーダのクエリとして選択する．
-        \item Cross-modality Decoder\\
-        画像とテキストの両方の特徴量をクエリに注入し，モーダル間のアライメントをさらに高め，最終的な物体ボックスとラベル語句を出力する．
-    \end{enumerate}
-\end{nostretchbox}
-\end{itembox}
-
-\vspace{1em}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\linewidth]{img/method/groundingdino.png}
-    \caption{Grounding DINOのフレームワーク \protect \footnotemark}
-    \label{fig:groundingdino}
-\end{figure}
-\footnotetext{\cite{groundingdino}から引用}
-
-さらに，複数のカテゴリ名を入力する際，無関係な単語同士が干渉し合うのを防ぐため，Sub-sentence level Representationという技術を導入している．Attention maskを用いて，特定の単語間の関連性を強制的に遮断し，単語ごとの細かい情報を保持している．学習には，物体検出データ（Objects365，OpenImages，COCO），グラウンディングデータ（Flickr30k，Visual Genome，RefCOCOなど），キャンプションデータ（Cap4M）を含む大規模データセットで事前学習を行うことで，高度な概念の一般化を実現している．
-
-\subsection{SAM}\label{sec:sam}
-
-
-
-\section{シーングラフ生成手法}\label{sec:step1}
-本節ではLLMを用いたシーングラフ生成手法について述べる．本手法の一連の流れは図の通りである．
-
-\subsection{物体列挙}
-このステップでは，画像をLLMに入力し，画像内に含まれる可能性のある主要な物体を列挙する．これは未知の物体名を含むオープンボキャブラリな物体候補集合を得ることを目的とする．出力は修飾語を含まない単純名詞のリストであり，以下のプロンプトをLLM（GPT-4o）に与えることで行う．なお，実際のプロンプトは付録に示す．
-
-\vspace{1em}
-
-\begin{itembox}[l]{プロンプトの概要}
-    \begin{nostretchbox}
-    以下の指示，出力形式に基づいて，画像内の物体を抽出することを指示\\
-    \#指示
-    \begin{enumerate}
-        \item 画像内に見える\textbf{主要な物体}を全て列挙
-        \item 各要素は\textbf{単純な単数系の名詞}
-        \item \textbf{形容詞・色・素材・状態}などは含めない
-        \item \textbf{認識された物体名のみ}を出力する
-    \end{enumerate}
-    \#出力形式\\
-    カンマで区切る
-    
-    \end{nostretchbox}
-\end{itembox}
-
-\vspace{1em}
-
-大規模言語モデルは，事前学習によって膨大な知識や文脈理解能力を獲得しているが，その能力を効果的に引き出すためにはプロンプトの設計が極めて重要である．プロンプトはモデルに対する入力文であり，その内容や構造によって出力結果の精度・一貫性・創造性が大きく変化する．そこで上記のプロンプトでは，出力形式を明確に定義することでノイズを排除し，語彙の統一性を保つことで後段の処理を容易にすることを目的として設計した．このような設計により，モデルが曖昧な表現や冗長な記述を避け，画像内の実体に対応する一般的な語彙を抽出できるようになる．
-
-なお，ここで得られた物体名の集合を
-
-\begin{equation}
-    \hat{O} = \{\hat{o}_1, \hat{o}_2, \ldots, \hat{o}_n\}
-\end{equation}
-
-とする．
-
-\subsection{座標取得}\label{sec:step2}
-ここでは得られた物体名をテキストクエリとしてGrounding DINO（第\ref{sec:groundingdino}項）に入力し，対応するバウンディングボックス$box = (x_1,\, y_1,\, x_2,\, y_2)$と信頼度を得る．ここで，物体ごとの中心座標は次式で求める．
-
-\begin{equation}
-    \mathbf{c}_i = \left( \frac{x_1 + x_2}{2},\; \frac{y_1 + y_2}{2} \right)
-\end{equation}
-
-\vspace{1em}
-さらに，各物体領域をより明確に抽出するため，SAM（第\ref{sec:sam}項）によるマスク生成を併用する．SAMは，Grounding DINOで得られた矩形領域を入力とし，物体境界をピクセルレベルで抽出する．これにより，矩形境界のみでは不明確だった物体の輪郭が精密に得られ，重なり合う物体や接触判定における曖昧性を低減することができる．SAMの出力は，COCO形式のポリゴン表現$segmentation = (x_0,\, y_0,\, x_1,\, y_1,\,\ldots,\,x_n,\, y_n)$で得る．これにより，物体$o_i$の位置情報として，矩形＋ポリゴンのハイブリッド表現が得られる．
-
-検出された物体を$\mathcal{O} = \{o_1, o_2, \ldots, o_N\}$とし，画像に存在しない物体（Grounding DINOで検出されなかった候補）は自動的に除外される．本処理により，LLMが列挙した候補のうち実際に画像に存在するものだけが残るため，フィルタリングの役割を果たす．
-
-
-\subsection{関係語生成}\label{sec:step3}
-本ステップでは，第\ref{sec:step1}項で得られた物体集合$\hat{O} = \{\hat{o}_1, \hat{o}_2, \ldots, \hat{o}_n\}$に対して，全ての物体ペア$(o_i, o_j)$を組み合わせ，それぞれの関係を大規模言語モデルによって生成する．生成結果は，関係語（relation）に加え，位置関係（position）および接触関係（attach）を含むJSON形式で出力される．
+\section{グラフ構築}
+ここではグラフ構築します
+1関係語生成→2.構築
+\subsection{関係語生成}
+本ステップでは，物体集合$\hat{O} = \{\hat{o}_1, \hat{o}_2, \ldots, \hat{o}_n\}$に対して，全ての物体ペア$(o_i, o_j)$を組み合わせ，それぞれの関係を大規模言語モデルによって生成する．生成結果は，関係語（relation）に加え，位置関係（position）および接触関係（attach）を含むJSON形式で出力される．
 
 関係語の生成には，LLMに明確な出力仕様を与えるため，指示文と出力形式を明示した以下のプロンプトを使用する．このプロンプトは，抽象的な意味関係ではなく，日常的・物理的に成立する空間関係を想定して設計している．また，プロンプト内に具体例な出力例を含めることで，LLMの出力を安定化させ，より一貫した関係文の生成を促している．なお，実際に使用したプロンプト全文は付録に示す．
 
@@ -211,8 +131,7 @@ $\mathrm{position} =
 LLMによる出力は確率分布に基づく生成過程を通じて行われるため，同一のプロンプトを与えても常に完全に同一の結果が得られるとは限らない．出力形式や構造を詳細に指定した場合においても，トークン生成時の確率的揺らぎや文脈解釈の不確実性により，意図しない形式の文章や構造上の誤り，あるいは値の欠落を生じることがある，これは，LLMが厳密な規則に従って動作するルールベースモデルではなく，膨大な事例から統計的に言語パターンを学習した確率的生成モデルであることに起因する．
 そこで本研究では，このような生成結果の不確実性に対処するため，出力が事前に定義したフォーマットに適合しているかを自動的に検証する機構を導入する。具体的には、生成結果において必要な値が欠落している場合や、構造がフォーマット仕様と一致しない場合を検出し、それらが確認された際には再生成を自動的に実行する．これにより，生成結果の構造的信頼性を確保しつつ、プロンプトの自由度と創発性を維持したまま、安定した関係データの取得を実現している。
 
-
-\subsection{関係グラフ構築}\label{sec:step4}
+\subsection{関係グラフ構築}
 本ステップでは，前段で得られた関係データをもとに，物体，関係語，位置関係，および接触情報を統合して関係グラフを構築する．構築される関係グラフは，有向グラフ$G=(V,E)$で表され，ノード集合$V$は物体や関係に関する要素を，エッジ集合$E$はそれらの共起確率を表す．各ノードは，画像中の物体とLLM出力の意味情報を対応づけ，関係文から抽出された主語・関係語・目的語を多段的に結ぶ構造を持つ．これにより，単なる文表現のつながりではなく，空間的配置と物理的生合成を伴う関係ネットワークを表現できる．構築する関係グラフの一例を図に示す．
 
 （図）
@@ -265,10 +184,97 @@ area\_objectノードは，言語的な関係表現が必ずしも一意な物�
 
 \subsubsection{接触関係の付与}
 
-\subsection{グラフ探索}\label{sec:step5}
+
+\section{シーングラフ生成}
+
+\subsection{物体認識}
+物体列挙→座標取得
+使用技術について述べる．
+
+\subsubsection{GroundingDINO}\label{sec:groundingdino}
+Grounding DINO\cite{groundingdino}は，Liuらによって提案されたオープンセット物体検出モデルである．従来の物体検出モデルはCOCOなどのデータセットに含まれる固定カテゴリしか検出できないという制約があった．これに対して，Transformerベースの物体検出器であるDINOを基盤とし言語情報を導入することで，自然言語の入力を条件として任意の物体を検出できるように設計されている．そのため，未知のカテゴリを含むオープンワールド環境でも柔軟に対応可能である．
+
+Grounding DINOは，画像とテキストの情報を密接に統合するために，Dual-encoder-single-decoderアーキテクチャを採用している．従来モデルが一部の段階でしか特徴量を融合していなかったのに対し，Grounding DINOでは以下の3つのフェーズで視覚と言語を融合させている．
+図\ref{fig:groundingdino}にGrounding DINOのフレームワークを示す．
+
+\begin{itembox}[l]{Dual-encoder-single-decoderアーキテクチャ}
+    \begin{nostretchbox}
+    \begin{enumerate}
+        \item Feature Enhancer\\
+        自己注意機構に加え，テキスト画像，画像からテキストへの双方向の交差注意機構（Cross-Attention）を積み重ねることで，特徴量を強化・融合する．
+        \item Language-guided Query Selection\\
+        入力テキストに最も関連性の高い画像特徴をデコーダのクエリとして選択する．
+        \item Cross-modality Decoder\\
+        画像とテキストの両方の特徴量をクエリに注入し，モーダル間のアライメントをさらに高め，最終的な物体ボックスとラベル語句を出力する．
+    \end{enumerate}
+\end{nostretchbox}
+\end{itembox}
+
+\vspace{1em}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/method/groundingdino.png}
+    \caption{Grounding DINOのフレームワーク \protect \footnotemark}
+    \label{fig:groundingdino}
+\end{figure}
+\footnotetext{\cite{groundingdino}から引用}
+
+さらに，複数のカテゴリ名を入力する際，無関係な単語同士が干渉し合うのを防ぐため，Sub-sentence level Representationという技術を導入している．Attention maskを用いて，特定の単語間の関連性を強制的に遮断し，単語ごとの細かい情報を保持している．学習には，物体検出データ（Objects365，OpenImages，COCO），グラウンディングデータ（Flickr30k，Visual Genome，RefCOCOなど），キャンプションデータ（Cap4M）を含む大規模データセットで事前学習を行うことで，高度な概念の一般化を実現している．
+\subsubsection{SAM}\label{sec:sam}
 
 
-\subsection{シーングラフ生成}\label{sec:step6}
+＜物体列挙＞
+このステップでは，画像をLLMに入力し，画像内に含まれる可能性のある主要な物体を列挙する．これは未知の物体名を含むオープンボキャブラリな物体候補集合を得ることを目的とする．出力は修飾語を含まない単純名詞のリストであり，以下のプロンプトをLLM（GPT-4o）に与えることで行う．なお，実際のプロンプトは付録に示す．
+
+\vspace{1em}
+
+\begin{itembox}[l]{プロンプトの概要}
+    \begin{nostretchbox}
+    以下の指示，出力形式に基づいて，画像内の物体を抽出することを指示\\
+    \#指示
+    \begin{enumerate}
+        \item 画像内に見える\textbf{主要な物体}を全て列挙
+        \item 各要素は\textbf{単純な単数系の名詞}
+        \item \textbf{形容詞・色・素材・状態}などは含めない
+        \item \textbf{認識された物体名のみ}を出力する
+    \end{enumerate}
+    \#出力形式\\
+    カンマで区切る
+    
+    \end{nostretchbox}
+\end{itembox}
+
+\vspace{1em}
+
+大規模言語モデルは，事前学習によって膨大な知識や文脈理解能力を獲得しているが，その能力を効果的に引き出すためにはプロンプトの設計が極めて重要である．プロンプトはモデルに対する入力文であり，その内容や構造によって出力結果の精度・一貫性・創造性が大きく変化する．そこで上記のプロンプトでは，出力形式を明確に定義することでノイズを排除し，語彙の統一性を保つことで後段の処理を容易にすることを目的として設計した．このような設計により，モデルが曖昧な表現や冗長な記述を避け，画像内の実体に対応する一般的な語彙を抽出できるようになる．
+
+なお，ここで得られた物体名の集合を
+
+\begin{equation}
+    \hat{O} = \{\hat{o}_1, \hat{o}_2, \ldots, \hat{o}_n\}
+\end{equation}
+
+とする．
+
+
+
+＜座標取得＞
+ここでは得られた物体名をテキストクエリとしてGrounding DINO（第\ref{sec:groundingdino}項）に入力し，対応するバウンディングボックス$box = (x_1,\, y_1,\, x_2,\, y_2)$と信頼度を得る．ここで，物体ごとの中心座標は次式で求める．
+
+\begin{equation}
+    \mathbf{c}_i = \left( \frac{x_1 + x_2}{2},\; \frac{y_1 + y_2}{2} \right)
+\end{equation}
+
+\vspace{1em}
+さらに，各物体領域をより明確に抽出するため，SAM（第\ref{sec:sam}項）によるマスク生成を併用する．SAMは，Grounding DINOで得られた矩形領域を入力とし，物体境界をピクセルレベルで抽出する．これにより，矩形境界のみでは不明確だった物体の輪郭が精密に得られ，重なり合う物体や接触判定における曖昧性を低減することができる．SAMの出力は，COCO形式のポリゴン表現$segmentation = (x_0,\, y_0,\, x_1,\, y_1,\,\ldots,\,x_n,\, y_n)$で得る．これにより，物体$o_i$の位置情報として，矩形＋ポリゴンのハイブリッド表現が得られる．
+
+検出された物体を$\mathcal{O} = \{o_1, o_2, \ldots, o_N\}$とし，画像に存在しない物体（Grounding DINOで検出されなかった候補）は自動的に除外される．本処理により，LLMが列挙した候補のうち実際に画像に存在するものだけが残るため，フィルタリングの役割を果たす．
+
+\subsection{グラフ探索}
+
+\subsection{シーングラフ生成}
+
 
 
 
